@@ -79,7 +79,24 @@ class BigCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(pair.asLowerCase);
+//add this
+final theme = Theme.of(context);
+//add
+final style = theme.textTheme.displayMedium!.copyWith(
+  color:theme.colorScheme.onPrimary,
+);
+/*
+theme.textTheme 앱의 글꼴 테마에 엑세스..
+bodyMedium(),caption(),headlineLarge()
+ */
+
+    return Card(
+      color:theme.colorScheme.primary,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(pair.asLowerCase, style:style),
+      ),
+    );
   }
 }
 //앱을 대화식으로 진행하는것이 플루터를 알아가는 가장 좋은 방법입니다
