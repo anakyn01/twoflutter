@@ -54,17 +54,21 @@ class MyHomePage extends StatelessWidget{
 var pair = appState.current;
 
     return Scaffold(
-      body:Column(
-        children: [
-Text('A random AWESOME idea:'),
-BigCard(pair: pair),
-ElevatedButton(onPressed: (){
-  appState.getNext();
-  //print('button pressed!');
-},
-child:Text('Next'),
-),
-        ],),
+      body:Center(
+        child: Column(
+          //정렬
+        mainAxisAlignment:MainAxisAlignment.center,
+          children: [
+        Text('A random AWESOME idea:'),
+        BigCard(pair: pair),
+        ElevatedButton(onPressed: (){
+          appState.getNext();
+          //print('button pressed!');
+        },
+        child:Text('Next'),
+        ),
+          ],),
+      ),
     );
   }
 }
@@ -87,14 +91,18 @@ final style = theme.textTheme.displayMedium!.copyWith(
 );
 /*
 theme.textTheme 앱의 글꼴 테마에 엑세스..
-bodyMedium(),caption(),headlineLarge()
+bodyMedium(중간크기의 표준텍스트),caption(이미지 설명),headlineLarge(큰 헤드라인용)
  */
 
     return Card(
       color:theme.colorScheme.primary,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Text(pair.asLowerCase, style:style),
+        child: Text(
+          pair.asLowerCase, 
+          style:style,
+          semanticsLabel: "${pair.first} ${pair.second}",
+          ),
       ),
     );
   }
