@@ -58,40 +58,102 @@ class MyAppState extends ChangeNotifier{
 /*
 
  */
-class MyHomePage extends StatelessWidget{
+class MyHomePage extends StatefulWidget{
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+
+//add
+var selectedIndex = 0;
+
   @override
   Widget build(BuildContext context) {
-return Scaffold(
-  body:Row(
-    children: [
-      SafeArea(
-        child: NavigationRail(
-          extended: false,
-          destinations: [
-            NavigationRailDestination(
-              icon: Icon(Icons.home),
-              label: Text('Home'),
+Widget page;//이코드는 위젯 유형의 새변수 page를 선언
+switch (selectedIndex) {
+  //selectedIndex의 현재값에 따라 switch문이 화면을 page에 할당합니다
+  case 0:
+  page = GeneratorPage();
+  break;
+  case 1:
+  page = Placeholder();
+  break;
+  default:
+  throw UnimplementedError('no widget for $selectedIndex');
+}
+
+
+//레이아웃빌더의 빌더 콜백은 제약조건이 변경될때마다 호출됩니다 
+//(앱의 창의 크기를 조절할때, 사용자가 휴대전화를 새로모드 가로모드 또는 그반대로 회전)
+return LayoutBuilder(
+  builder: (context, constraints) {
+    return Scaffold(
+      body:Row(
+        children: [
+          SafeArea(
+            child: NavigationRail(
+              //extended: false,
+              extended: constraints.maxWidth >= 600,//600 보다 작거나 같거나
+              destinations: [
+                NavigationRailDestination(
+                  icon: Icon(Icons.home),
+                  label: Text('Home'),
+                  ),
+                  NavigationRailDestination(
+                  icon: Icon(Icons.favorite),
+                  label: Text('Favorites'),
+                  ),
+              ],
+              selectedIndex: selectedIndex,
+              onDestinationSelected: (value){
+                //print('selected: $value');
+               setState((){
+                selectedIndex = value;
+               });
+              },
               ),
-              NavigationRailDestination(
-              icon: Icon(Icons.favorite),
-              label: Text('Favorites'),
               ),
-          ],
-          selectedIndex: 0,
-          onDestinationSelected: (value){
-            print('selected: $value');
-          },
-          ),
-          ),
-          Expanded(
-            child: Container(
-              color:Theme.of(context).colorScheme.primaryContainer,
-              child:GeneratorPage(),
-            ),
-            ),
-    ],
-    ),
+              Expanded(
+                child: Container(
+                  color:Theme.of(context).colorScheme.primaryContainer,
+                  //child:GeneratorPage(),
+                  child:page,
+                ),
+                ),
+        ],
+        ),
+    );
+  }
 );
+  }
+}
+
+class FavoritesPage extends StatelessWidget{
+  @override
+  Widget build(BuildContext context){
+    var appState = context.watch<MyAppState>();
+
+    if(appState.favorites.isEmpty){
+      return Center(
+        child: Text('No favorites yet'),
+      );
+    }
+  
+
+  return ListView(
+   children:[
+    Padding(
+      padding: const EdgeInsets.all(20),
+      child: Text('You have ''${appState.favorites.length} favorites:'),
+    ),
+      for(var pair in appState.favorites)
+        ListTile(
+leading: Icon(Icons.favorite),
+title: Text(pair.asLowerCase),
+      ),
+   ],
+    );
   }
 }
 
