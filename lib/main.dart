@@ -74,13 +74,13 @@ Widget page;//이코드는 위젯 유형의 새변수 page를 선언
 switch (selectedIndex) {
   //selectedIndex의 현재값에 따라 switch문이 화면을 page에 할당합니다
   case 0:
-  page = GeneratorPage();
-  break;
+    page = GeneratorPage();
+    break;
   case 1:
-  page = Placeholder();
-  break;
+    page = FavoritesPage();
+    break;
   default:
-  throw UnimplementedError('no widget for $selectedIndex');
+    throw UnimplementedError('no widget for $selectedIndex');
 }
 
 
@@ -128,35 +128,6 @@ return LayoutBuilder(
 );
   }
 }
-
-class FavoritesPage extends StatelessWidget{
-  @override
-  Widget build(BuildContext context){
-    var appState = context.watch<MyAppState>();
-
-    if(appState.favorites.isEmpty){
-      return Center(
-        child: Text('No favorites yet'),
-      );
-    }
-  
-
-  return ListView(
-   children:[
-    Padding(
-      padding: const EdgeInsets.all(20),
-      child: Text('You have ''${appState.favorites.length} favorites:'),
-    ),
-      for(var pair in appState.favorites)
-        ListTile(
-leading: Icon(Icons.favorite),
-title: Text(pair.asLowerCase),
-      ),
-   ],
-    );
-  }
-}
-
 class GeneratorPage extends StatelessWidget{
   @override
   Widget build(BuildContext context){
@@ -241,4 +212,36 @@ bodyMedium(중간크기의 표준텍스트),caption(이미지 설명),headlineLa
     );
   }
 }
+
+class FavoritesPage extends StatelessWidget{
+  @override
+  Widget build(BuildContext context){
+    var appState = context.watch<MyAppState>();
+
+    if(appState.favorites.isEmpty){
+      return Center(
+        child: Text('No favorites yet'),
+      );
+    }
+  
+
+  return ListView(
+   children:[
+    Padding(
+      padding: const EdgeInsets.all(20),
+      child: Text('You have ''${appState.favorites.length} favorites:'),
+    ),
+      for(var pair in appState.favorites)
+        ListTile(
+leading: Icon(Icons.favorite),
+title: Text(pair.asLowerCase),
+      ),
+   ],
+    );
+  }
+}
+
+
+
+
 //앱을 대화식으로 진행하는것이 플루터를 알아가는 가장 좋은 방법입니다
