@@ -41,6 +41,19 @@ class MyAppState extends ChangeNotifier{
     current = WordPair.random();
     notifyListeners();
   }
+
+  //새로운 비즈니스 로직추가
+  var favorites = <WordPair>[];
+  //이속성이 비워져 있는 목록으로 초기화
+  void toggleFavorite(){
+//즐겨찾기 목록에서 현재단어쌍(이미있는 경우)을 삭제하거나 아직없는 경우에는 목록에 추가
+    if(favorites.contains(current)){
+      favorites.remove(current);
+    }else{
+      favorites.add(current);
+    }
+    notifyListeners();
+  }
 }
 /*
 
@@ -53,6 +66,14 @@ class MyHomePage extends StatelessWidget{
 //add this
 var pair = appState.current;
 
+//add this
+IconData icon;
+if(appState.favorites.contains(pair)){
+  icon = Icons.favorite;
+}else{
+  icon = Icons.favorite_border;
+}
+
     return Scaffold(
       body:Center(
         child: Column(
@@ -61,11 +82,25 @@ var pair = appState.current;
           children: [
         Text('A random AWESOME idea:'),
         BigCard(pair: pair),
-        ElevatedButton(onPressed: (){
-          appState.getNext();
-          //print('button pressed!');
-        },
-        child:Text('Next'),
+        Row(
+          children: [
+//add this
+ElevatedButton.icon(
+  onPressed: (){
+    appState.toggleFavorite();
+  },
+  icon: Icon(icon),
+  label:Text('Like'),
+  ),
+  SizedBox(width:10),
+
+            ElevatedButton(onPressed: (){
+              appState.getNext();
+              //print('button pressed!');
+            },
+            child:Text('Next'),
+            ),
+          ],
         ),
           ],),
       ),
