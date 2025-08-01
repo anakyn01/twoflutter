@@ -32,28 +32,56 @@ return ChangeNotifierProvider(
   }
 }
 
+//고급스럽게 만들려면..아래를 수정
 class MyAppState extends ChangeNotifier{
   var current = WordPair.random();
+
+//end add
+var history = <WordPair>[];
+//히스토리는 워드페어 타입리스트로 이전에 생성된 단어쌍들을 저장하는 히스토리 역활을 합니다
+GlobalKey? historyListKey;
+//historyListKey는 GlobalKey타입의 변수이며 플루터에서 특정위젯(주로 상태를 가진 위젯)의
+//상태에 접근하기 위해서 사용합니다 이럴경우는 animatedlist상태에 접근하기 위해 사용될 가능성이 큽니다
+//?는 null이 될수도 있음을 의미합니다
+
   //add this
   void getNext(){//이매서드는..임의의 새 WordPair를 큐런트에 재할당
   //또한 MyAppState를 보고있는 사람에게 알림을 보내는 notifyListeners()
   //체인지 노티파이어 메서드를 호출
+//end add
+history.insert(0, current);//최근 단어쌍이 가장 앞에 쌓이도록 함
+var animatedList = historyListKey?.currentState as AnimatedListState?;
+//historyListKey가 null이 아니면 해당 키가 참조하는 위젯상태를 가져옵니다
+animatedList?.insertItem(0);
+//null이 아니면 즉 상테가 존재한다면 색인 첫번째에 아이템이 추가됨을 알리고 애니메이션 효과를 실행
     current = WordPair.random();
-    notifyListeners();
+//새로운 무작위 단어쌍을 생성하여 current에 할당
+    notifyListeners();//함수호출
   }
+//겟넥스트는 현재 단어쌍을 히스토리 맨앞에 추가하고 애니메이티드리스트 위젯에 아이템 추가 내이메이션을 트리거하며 
+//새로운 랜덤 단어쌍으로 current를 갱신하고 ui에 변경사항을 알린다
 
   //새로운 비즈니스 로직추가
   var favorites = <WordPair>[];
   //이속성이 비워져 있는 목록으로 초기화
-  void toggleFavorite(){
+  void toggleFavorite([WordPair? pair]){
+//end add
+pair = pair ?? current;
+
 //즐겨찾기 목록에서 현재단어쌍(이미있는 경우)을 삭제하거나 아직없는 경우에는 목록에 추가
-    if(favorites.contains(current)){
-      favorites.remove(current);
+    if(favorites.contains(pair)){
+      favorites.remove(pair);
     }else{
-      favorites.add(current);
+      favorites.add(pair);
     }
     notifyListeners();
   }
+  //삭제하는 함수추가
+  void removeFavorite(WordPair pair){
+    favorites.remove(pair);
+    notifyListeners();
+  }
+  
 }
 /*
 
@@ -83,15 +111,56 @@ switch (selectedIndex) {
     throw UnimplementedError('no widget for $selectedIndex');
 }
 
+//end add 변수추가
+var mainArea = ColoredBox(//자식 위젯에 배경에 색을 칠하는 위젯
+  color: ColorScheme.surfaceVariant,
+  //이영역의 배경색을 ColorScheme.surfaceVariant로 지정
+  //ColorScheme => Theme.of(context).colorScheme로부터 얻은 앱 테마 색상값
+  child: AnimatedSwitcher(//이전자식을 사라지게 하고 새로운 자식을 나타나게 하는 전환애니메이션
+    duration: Duration(milliseconds: 200),//200ms로 설정
+    child:page,
+    ),
+  );
+
 
 //레이아웃빌더의 빌더 콜백은 제약조건이 변경될때마다 호출됩니다 
 //(앱의 창의 크기를 조절할때, 사용자가 휴대전화를 새로모드 가로모드 또는 그반대로 회전)
-return LayoutBuilder(
+return Scaffold(
+  body:LayoutBuilder(
   builder: (context, constraints) {
-    return Scaffold(
-      body:Row(
+    //
+    if(constraints.maxWidth < 450) {
+
+    return Column(
         children: [
-          SafeArea(
+          //end add
+          Expanded(child: mainArea),
+ SafeArea(
+  child:BottomNavigationBar(
+    items:[
+      BottomNavigationBarItem(
+        icon: Icon(Icons.home),
+       label: 'Home', 
+        ),
+      BottomNavigationBarItem(
+       icon: Icon(Icons.favorite),
+       label: 'Favorites', 
+      ),  
+    ], 
+    currentIndex: selectedIndex,
+    onTap: (value) {
+      setState(() {
+        selectedIndex = value;
+      });
+  },
+  ),
+ )
+        ],
+    );
+    }else{
+return Row(
+  children: [
+    SafeArea(
             child: NavigationRail(
               //extended: false,
               extended: constraints.maxWidth >= 600,//600 보다 작거나 같거나
@@ -115,19 +184,17 @@ return LayoutBuilder(
               ),
               ),
               Expanded(
-                child: Container(
-                  color:Theme.of(context).colorScheme.primaryContainer,
-                  //child:GeneratorPage(),
-                  child:page,
+                child: mainArea
                 ),
-                ),
-        ],
-        ),
-    );
-  }
+  ],
+                );
+    }
+  },
+  ),
 );
   }
 }
+
 class GeneratorPage extends StatelessWidget{
   @override
   Widget build(BuildContext context){
