@@ -215,6 +215,11 @@ if(appState.favorites.contains(pair)){
           //정렬
         mainAxisAlignment:MainAxisAlignment.center,
           children: [
+            Expanded(
+flex:3,
+child:HistoryListView(),
+              ),
+        SizedBox(height:10),
         //Text('A random AWESOME idea:'),
         BigCard(pair: pair),
         SizedBox(height: 10),
@@ -239,6 +244,7 @@ ElevatedButton.icon(
             ),
           ],
         ),
+        Spacer(flex:2),
           ],
           ),
           );
@@ -247,9 +253,9 @@ ElevatedButton.icon(
 
 class BigCard extends StatelessWidget {
   const BigCard({
-    super.key,
+    Key? Key,
     required this.pair,
-  });
+  }) : super(key : Key);
 
   final WordPair pair;
 
@@ -269,12 +275,23 @@ bodyMedium(중간크기의 표준텍스트),caption(이미지 설명),headlineLa
     return Card(
       color:theme.colorScheme.primary,
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text(
-          pair.asLowerCase, 
-          style:style,
-          semanticsLabel: "${pair.first} ${pair.second}",
-          ),
+        padding: const EdgeInsets.all(20),
+        child: AnimatedSize(
+duration: Duration(milliseconds: 200),
+child: MergeSemantics(
+  child:Wrap(
+    children:[
+              Text(
+          pair.first, 
+          style:style.copyWith(fontWeight:FontWeight.w200),
+              ),
+              Text(
+                pair.second, style:style.copyWith(fontWeight:FontWeight.bold),
+              )
+    ],
+    ),
+),
+),
       ),
     );
   }
@@ -283,6 +300,8 @@ bodyMedium(중간크기의 표준텍스트),caption(이미지 설명),headlineLa
 class FavoritesPage extends StatelessWidget{
   @override
   Widget build(BuildContext context){
+    //add
+    var theme = Theme.of(context);
     var appState = context.watch<MyAppState>();
 
     if(appState.favorites.isEmpty){
@@ -292,19 +311,29 @@ class FavoritesPage extends StatelessWidget{
     }
   
 
-  return ListView(
-   children:[
-    Padding(
-      padding: const EdgeInsets.all(20),
-      child: Text('You have ''${appState.favorites.length} favorites:'),
-    ),
-      for(var pair in appState.favorites)
-        ListTile(
-leading: Icon(Icons.favorite),
-title: Text(pair.asLowerCase),
-      ),
-   ],
-    );
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+        Padding(
+          padding: const EdgeInsets.all(30),
+          child: Text('You have ''${appState.favorites.length} favorites:'),
+        ),
+        Expanded(
+          child: GridView(
+            gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent:400,
+              childAspectRatio: 400 / 80,
+            ),),
+          )
+          for(var pair in appState.favorites)
+            ListTile(
+      leading: Icon(Icons.favorite),
+      title: Text(pair.asLowerCase),
+          ),
+       ],
+        ),
+    ],
+  );
   }
 }
 
