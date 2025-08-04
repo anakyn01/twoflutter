@@ -113,7 +113,8 @@ switch (selectedIndex) {
 
 //end add 변수추가
 var mainArea = ColoredBox(//자식 위젯에 배경에 색을 칠하는 위젯
-  color: ColorScheme.surfaceVariant,
+  //color: ColorScheme.surfaceVariant,
+  color: Theme.of(context).colorScheme.surfaceVariant,
   //이영역의 배경색을 ColorScheme.surfaceVariant로 지정
   //ColorScheme => Theme.of(context).colorScheme로부터 얻은 앱 테마 색상값
   child: AnimatedSwitcher(//이전자식을 사라지게 하고 새로운 자식을 나타나게 하는 전환애니메이션
