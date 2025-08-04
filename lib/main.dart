@@ -323,20 +323,100 @@ class FavoritesPage extends StatelessWidget{
             gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
               maxCrossAxisExtent:400,
               childAspectRatio: 400 / 80,
-            ),),
-          )
-          for(var pair in appState.favorites)
+            ),
+            children:[
+ for(var pair in appState.favorites)
             ListTile(
-      leading: Icon(Icons.favorite),
-      title: Text(pair.asLowerCase),
-          ),
-       ],
+      leading: IconButton(
+        icon:Icon(Icons.delete_outline, semanticLabel: 'Delete'),
+        color:theme.colorScheme.primary,
+        onPressed: (){
+          appState.removeFavorite(pair);
+        },
+  ),
+      title: Text(
+        pair.asLowerCase,
+        semanticsLabel: pair.asPascalCase,
         ),
-    ],
+),
+],
+),
+),
+],
   );
   }
 }
 
+class HistoryListView extends StatefulWidget {
+  const HistoryListView({Key? key}) : super(key: key);
+
+  @override
+  State<HistoryListView> createState() => _HistoryListviewState();
+  //_HistoryListviewState(); private(비공개) 클래스임을 의미한다
+
+}
+
+class _HistoryListviewState extends State<HistoryListView>{
+  final _key = GlobalKey();
+  //애니메이트 리스트 스테이트에 접근해서 항목 삽입/삭제 같은 애니메이션을 트리거
+  static const Gradient _maskingGradient = LinearGradient(
+    //선형 그라디언트를 정의하는 클래스
+    colors: [Colors.transparent, Colors.black],
+    //위에서 아래로 투명 -> 검정색으로 변환
+    stops:[0.0, 0.5],
+     begin: Alignment.topCenter,
+     end:Alignment.bottomCenter,
+  );
+
+  @override//재정의
+  Widget build(BuildContext context){
+  //StatefulWidget의 build매서드를 오버라이드 합니다
+  final appState = context.watch<MyAppState>();
+//context.watch<MyAppState> 프로바이더 패턴을 사용해 앱 상태(MyAppState)를 가져 옵니다
+appState.historyListKey = _key;
+//historyListKey에 현재 AnimatedList의 키(_key)를 전달합니다
+//이렇게 하게되면 MyAppState에서 AnimatedList에 접근하여 항목을 삽입하거나 삭제
+//할수 있습니다   
+
+return ShaderMask(
+//위젯위에 쉐이더(그라디언트 등)를 적용할수있게 해줍니다
+  shaderCallback: (bounds) => _maskingGradient.createShader(bounds),
+//리스트위에 마스킹그라디언트를 그려주는 콜백
+blendMode: BlendMode.dstIn,
+//셰이더의 알파(투명도)값을 기준으로 대상(여기서는 리스트)을 표시함
+//위쪽이 점점 사라지는 시각적 효과 (페이드 아웃)
+child:AnimatedList(//리스트 아이템에 애니메이션 적용
+key: _key,//위에서 선언한 GlobalKey연결
+reverse: true,//가장 최신 항목이 아래가 아닌 위에 나타나도록 역순 정렬
+padding: EdgeInsets.only(top:100),//리스트 상단 여백
+initialItemCount: appState.history.length,//초기에 랜더링할 항목에 개수
+itemBuilder: (context, index, animation){
+  final pair = appState.history[index];
+  return SizeTransition(
+    //아이템이 리스트에 추가될때 점점커지며 나타나는 애니메이션 효과제공
+    sizeFactor: animation,
+    child:Center(
+child: TextButton.icon(
+  onPressed: (){//단어싸을 즐겨찾기에 추가 / 제거
+    appState.toggleFavorite(pair);
+  },
+  icon: appState.favorites.contains(pair)
+  //즐겨찾기에 있으면 하트아이콘 표시, 없으면 빈공간(SizedBox)
+  ? Icon(Icons.favorite, size:12)
+  : SizedBox(),
+  label: Text(//단어쌍 표시
+    pair.asLowerCase,//소문자 형태
+    semanticsLabel:pair.asPascalCase,//접근성용 레이블
+    ),
+  ),
+  ),
+
+);
+},
+),
+);
+  }
+}
 
 
 
