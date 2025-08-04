@@ -1,12 +1,46 @@
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+/*
+MyApp(Stateless):
+Provider로 앱상태(MyAppState)를 전역으로 주입하고 테마 홈페이지 설정
 
-void main() {
+MyAppState(ChangeNotifier):
+현재 단어쌍, 즐겨찾기, 히스토리 관리 -> 변경 시 notifyListeners()로 UI갱신
+
+MyHomePage(Stateful) 모바일 / 태블릿 화면 크기 감지 ->바텀네이베이션바 또는
+네비게이션레일 선택
+
+GeneratorPage : 단어생성 + 즐겨찾기 토글UI
+FavoritesPage : 즐겨찾기 리스트 보기 삭제 기능
+HistoryListView : AnimatedList로 이전에 생성된 단어 감각적으로 표시
+
+핵심기능 분석
+1) 단어생성 &  히스토리 업데이트
+- 현재 단어 (current)를 히스토리 리스트 맨앞으로 삽입
+- 애니메이티드리스트에 insertItem(0)호출 -> 새 항목 애니메이션
+- current를 새 무작위 단어로 업데이트 -> 구독된 위젯들을 리빌드
+
+2) 즐겨찾기 토글
+- toggleFavorite([...])메서드 : 현재 단어 또는 전달된 WordPair를 favorites리스트에 추가 /제거
+- notifyListeners() 호출 -> Genaratorpage아이콘 FavoritesPage리스트 자동갱신
+
+3) 반응형 네비게이션
+- 450px미만 : 바텀내비게이션 바 사용
+- 450px이상 : 네비게이션네일로 전환
+- AnimatedSwitcher로 화면 전환시 팬딩 처리(200ms) : 자연스럽게 전환
+
+4) 히스토리 스크롤 UI 최적화
+- animatedlist를 reverse:true등으로 구성
+- ShaderMask + 반투명 fadr-out효과 추가
+ */
+
+void main() {//플루터에 주요 진입점
   runApp(const MyApp());
+  //앱을 시작하고 위젯트리를 확장하기 위해 호출합니다
 }
 
-class MyApp extends StatelessWidget{
+class MyApp extends StatelessWidget{//앱의 루트 위젯을 정의
 //tatelessWidget을 상속받은 클래스
   const MyApp({super.key});
   //상태를 가지지 않으며 오직 ui만을 구성합니다
@@ -20,7 +54,7 @@ return ChangeNotifierProvider(
   create: (context) => MyAppState(),
   //MyAppState()객체를 생성하고 앱 전체에 공급합니다
   //이객체는 ChangeNotifier를 상속해야 하며 배분변화시 UI를 갱신할수 있다
-  child:MaterialApp(
+  child:MaterialApp(//머티리얼앱을 래핑
     title:'타이틀 이므니다',
     theme:ThemeData(//앱의 전체적인 디자인 테마를 설정
       useMaterial3: true,
