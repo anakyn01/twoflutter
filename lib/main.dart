@@ -43,13 +43,15 @@ void main() {//플루터에 주요 진입점
 class MyApp extends StatelessWidget{//앱의 루트 위젯을 정의
 //tatelessWidget을 상속받은 클래스
   const MyApp({super.key});
-  //상태를 가지지 않으며 오직 ui만을 구성합니다
+//MyApp StatelessWidget을 상속받는 위젯
+//상태를 가지지 않으며 자식 위젯에게 상태를 전달 오직 ui만을 구성합니다
 //const생성자를 사용하여 불변성확보 및 성능을 최적화
+//생성자에서 key를 넘겨받을수 있도록 설정(super.key)
   @override
   Widget build(BuildContext context) {
     //플루터에서 ui를 그릴때 호출되는 핵심 매서드
 //리턴값은 위젯트리이고 ChangeNotifierProvider로 시작합니다
-return ChangeNotifierProvider(
+return ChangeNotifierProvider(//provider패턴의 핵심 클래스
   //프로바이더 패키지를 사용한 상태관리 방식입니다
   create: (context) => MyAppState(),
   //MyAppState()객체를 생성하고 앱 전체에 공급합니다
@@ -68,10 +70,11 @@ return ChangeNotifierProvider(
 
 //고급스럽게 만들려면..아래를 수정
 class MyAppState extends ChangeNotifier{
-  var current = WordPair.random();
-
+  //MyAppState는 앱 전체 상태를 담당 ChangeNotifier는 상태가 변경되면 
+  //notifyListeners()를 호출하여 UI 를 자동으로 갱신
+  var current = WordPair.random();//렌덤 단어쌍을 생성
 //end add
-var history = <WordPair>[];
+var history = <WordPair>[];//이전에 표시된 단어쌍들을 저장하는 리스트
 //히스토리는 워드페어 타입리스트로 이전에 생성된 단어쌍들을 저장하는 히스토리 역활을 합니다
 GlobalKey? historyListKey;
 //historyListKey는 GlobalKey타입의 변수이며 플루터에서 특정위젯(주로 상태를 가진 위젯)의
@@ -104,13 +107,13 @@ pair = pair ?? current;
 
 //즐겨찾기 목록에서 현재단어쌍(이미있는 경우)을 삭제하거나 아직없는 경우에는 목록에 추가
     if(favorites.contains(pair)){
-      favorites.remove(pair);
+      favorites.remove(pair);//이미 있으면 제거
     }else{
-      favorites.add(pair);
+      favorites.add(pair);//없으면 추가
     }
-    notifyListeners();
+    notifyListeners();//변경 알림
   }
-  //삭제하는 함수추가
+  //삭제하는 함수추가 전달받은 단어쌍을 즐겨찾기 리스트에서 제거
   void removeFavorite(WordPair pair){
     favorites.remove(pair);
     notifyListeners();
@@ -121,20 +124,25 @@ pair = pair ?? current;
 
  */
 class MyHomePage extends StatefulWidget{
+  //상태를 가지기 때문에 StatefulWidget 사용
   @override
   State<MyHomePage> createState() => _MyHomePageState();
+  //createState()는 _MyHomePageState를 리턴 실제로직은 여기에 있음
 }
 
 class _MyHomePageState extends State<MyHomePage> {
 
 //add
-var selectedIndex = 0;
+var selectedIndex = 0;//현재 선택된 페이지 인덱스를 저장(0,1)
 
   @override
   Widget build(BuildContext context) {
+    //현재앱의 테마 컬러 가져오기 머티리얼3 기준
 Widget page;//이코드는 위젯 유형의 새변수 page를 선언
 switch (selectedIndex) {
   //selectedIndex의 현재값에 따라 switch문이 화면을 page에 할당합니다
+//잘못된 인덱스을 경우 에러를 던짐
+
   case 0:
     page = GeneratorPage();
     break;
@@ -162,8 +170,9 @@ var mainArea = ColoredBox(//자식 위젯에 배경에 색을 칠하는 위젯
 //(앱의 창의 크기를 조절할때, 사용자가 휴대전화를 새로모드 가로모드 또는 그반대로 회전)
 return Scaffold(
   body:LayoutBuilder(
+    //레이아웃 빌더를 사용하여 화면에 크기에 따른 UI를 다르게 구성
   builder: (context, constraints) {
-    //
+    //폭이 450보다 작으면 모바일
     if(constraints.maxWidth < 450) {
 
     return Column(
@@ -192,7 +201,7 @@ return Scaffold(
  )
         ],
     );
-    }else{
+    }else{//그렇지 않으면 포기 넓으면 내비게이션 레일을 사용함
 return Row(
   children: [
     SafeArea(
@@ -231,6 +240,10 @@ return Row(
 }
 
 class GeneratorPage extends StatelessWidget{
+/*
+페이지는 상태를 직접 갖지 않기 때문에 StatelessWidget 을 사용하는데
+대신외부상태 (MyAppState)를 Provider로부터 구독
+ */
   @override
   Widget build(BuildContext context){
     var appState = context.watch<MyAppState>();
@@ -240,23 +253,24 @@ var pair = appState.current;
 //add this
 IconData icon;
 if(appState.favorites.contains(pair)){
-  icon = Icons.favorite;
+  icon = Icons.favorite;//포함되어 있으면 빨간 하트
 }else{
-  icon = Icons.favorite_border;
+  icon = Icons.favorite_border;//아니면 빈하트
 }
 
     return Center(
  child:Column(
           //정렬
         mainAxisAlignment:MainAxisAlignment.center,
+        //모든 콘텐츠를 세로 방향으로 배치하고 중앙정렬
           children: [
-            Expanded(
+            Expanded(//상단 공간을 적절히 차지하게 설정
 flex:3,
 child:HistoryListView(),
               ),
         SizedBox(height:10),
         //Text('A random AWESOME idea:'),
-        BigCard(pair: pair),
+        BigCard(pair: pair),//빅카드도 커스텀위젯이며 pair를 받아 스타일링함
         SizedBox(height: 10),
         Row(
           mainAxisSize: MainAxisSize.min,
@@ -280,6 +294,7 @@ ElevatedButton.icon(
           ],
         ),
         Spacer(flex:2),
+        //하단 공간을 비워서 가운데 정렬을 유지하는데 도움 줌
           ],
           ),
           );
